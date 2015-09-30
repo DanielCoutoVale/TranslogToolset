@@ -42,7 +42,7 @@ public class TranslogDocument_0_1_0 implements TranslogDocument {
 	/**
 	 * The xPath object
 	 */
-	private XPath xPath;
+	private final XPath xPath;
 
 	private XPathExpression versionExp;
 	private XPathExpression translatorIdExp;
