@@ -87,7 +87,7 @@ public class TranslogDocument_0_1_0 implements TranslogDocument {
 	}
 
 	@Override
-	public final String getTargetText() {
+	public final String getInitialTargetText() {
 		return extractString(targetTextExp);
 	}
 

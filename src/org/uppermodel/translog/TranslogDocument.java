@@ -10,7 +10,7 @@ public interface TranslogDocument {
 
 	public String getSourceText();
 
-	public String getTargetText();
+	public String getInitialTargetText();
 
 	public String getFinalTargetText();
 
