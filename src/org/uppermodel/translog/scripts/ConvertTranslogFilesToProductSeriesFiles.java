@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 
 import org.uppermodel.translog.TranslogDocument;
 import org.uppermodel.translog.TranslogDocumentLoader;
@@ -24,30 +25,54 @@ public class ConvertTranslogFilesToProductSeriesFiles {
 		TranslogDocumentLoader loader = new TranslogDocumentLoader();
 		for (File sourceFile : source.listFiles()) {
 			TranslogDocument document = loader.loadDocument(sourceFile);
-			TranslogProduct product = new TranslogProduct(0, 0, "");
-			String text = "";
 			String name = sourceFile.getName();
 			File targetFile = new File(target, name.substring(0, name.lastIndexOf(".")) + ".txt");
 			FileWriter fw = new FileWriter(targetFile);
-			BufferedWriter bw = new BufferedWriter(fw);
-			PrintWriter pw = new PrintWriter(bw);
-			for (TranslogEvent event : document.getEvents()) {
-				product = event.newProduct(product);
-				if (text.equals(product.getText())) {
-					continue;
+			convert(document, name, fw, new Callback() {
+
+				@Override
+				public void onSuccess() {
+					System.out.println(name + "\tOK");
 				}
-				String line = event.getTime() + "\t" + product;
-				pw.println(line);
-				text = product.getText();
-				pw.flush();
+
+				@Override
+				public void onFailure(String textA, String textB) {
+					System.out.println(name + "\tERROR");
+					printDiff(textA, textB);
+				}
+				
+			});
+		}
+	}
+
+	public static interface Callback {
+		public void onSuccess();
+		public void onFailure(String textA, String textB);
+	}
+
+	private static void convert(TranslogDocument document, String name, Writer w, Callback callback)
+			throws IOException {
+		TranslogProduct product = new TranslogProduct(0, 0, "");
+		String text = "";
+		BufferedWriter bw = new BufferedWriter(w);
+		PrintWriter pw = new PrintWriter(bw);
+		for (TranslogEvent event : document.getEvents()) {
+			product = event.newProduct(product);
+			if (text.equals(product.getText())) {
+				continue;
 			}
-			pw.close();
-			String text2 = document.getFinalTargetText();
-			boolean ok = text.equals(text2);
-			System.out.println(name + "\t" + (ok ? "OK" : "ERROR"));
-			if (!ok) {
-				printDiff(text, text2);
-			}
+			String line = event.getTime() + "\t" + product;
+			pw.println(line);
+			text = product.getText();
+			pw.flush();
+		}
+		pw.close();
+		String text2 = document.getFinalTargetText();
+		boolean ok = text.equals(text2);
+		if (ok) {
+			callback.onSuccess();
+		} else {
+			callback.onFailure(text, text2);
 		}
 	}
 
