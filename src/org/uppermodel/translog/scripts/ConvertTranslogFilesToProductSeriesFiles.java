@@ -1,17 +1,13 @@
 package org.uppermodel.translog.scripts;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 
 import org.uppermodel.translog.TranslogDocument;
 import org.uppermodel.translog.TranslogDocumentLoader;
 import org.uppermodel.translog.TranslogDocumentLoadingException;
-import org.uppermodel.translog.TranslogEvent;
-import org.uppermodel.translog.TranslogProduct;
+import org.uppermodel.translog.export.TextSeriesExporter;
 
 public class ConvertTranslogFilesToProductSeriesFiles {
 
@@ -28,7 +24,8 @@ public class ConvertTranslogFilesToProductSeriesFiles {
 			String name = sourceFile.getName();
 			File targetFile = new File(target, name.substring(0, name.lastIndexOf(".")) + ".txt");
 			FileWriter fw = new FileWriter(targetFile);
-			convert(document, name, fw, new Callback() {
+			TextSeriesExporter exporter = new TextSeriesExporter();
+			exporter.exportTextSeries(document, fw, new TextSeriesExporter.Callback() {
 
 				@Override
 				public void onSuccess() {
@@ -42,37 +39,6 @@ public class ConvertTranslogFilesToProductSeriesFiles {
 				}
 				
 			});
-		}
-	}
-
-	public static interface Callback {
-		public void onSuccess();
-		public void onFailure(String textA, String textB);
-	}
-
-	private static void convert(TranslogDocument document, String name, Writer w, Callback callback)
-			throws IOException {
-		TranslogProduct product = new TranslogProduct(0, 0, "");
-		String text = "";
-		BufferedWriter bw = new BufferedWriter(w);
-		PrintWriter pw = new PrintWriter(bw);
-		for (TranslogEvent event : document.getEvents()) {
-			product = event.newProduct(product);
-			if (text.equals(product.getText())) {
-				continue;
-			}
-			String line = event.getTime() + "\t" + product;
-			pw.println(line);
-			text = product.getText();
-			pw.flush();
-		}
-		pw.close();
-		String text2 = document.getFinalTargetText();
-		boolean ok = text.equals(text2);
-		if (ok) {
-			callback.onSuccess();
-		} else {
-			callback.onFailure(text, text2);
 		}
 	}
 
