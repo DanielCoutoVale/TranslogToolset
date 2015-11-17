@@ -1,5 +1,5 @@
 # TranslogToolset
-A toolset for postprocessing Translog® logfiles
+A toolset for postprocessing Translog® files
 
 ## JAR Script
 
