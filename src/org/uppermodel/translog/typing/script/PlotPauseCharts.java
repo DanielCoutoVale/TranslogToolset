@@ -12,7 +12,10 @@ import javax.imageio.ImageIO;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.uppermodel.translog.typing.FrequencyData;
-import org.uppermodel.translog.typing.PauseCounter;
+import org.uppermodel.translog.typing.GermanCharInsertClassifier;
+import org.uppermodel.translog.typing.TypingPauseCounter;
+import org.uppermodel.translog.typing.WritingEventFactory;
+import org.uppermodel.translog.typing.dto.WritingEvent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -26,7 +29,6 @@ import static org.uppermodel.translog.typing.TranslogTypingUtils.*;
  * @author Daniel Couto-Vale <daniel.couto-vale@ifaar.rwth-aachen.de>
  */
 public class PlotPauseCharts implements Runnable {
-
 
 	/**
 	 * The path of the xml file
@@ -48,7 +50,10 @@ public class PlotPauseCharts implements Runnable {
 			Document document = loadDocument(filePath);
 			Element eventsElm = (Element) document.getElementsByTagName("Events").item(0);
 			NodeList eventNodes = eventsElm.getChildNodes();
-			PauseCounter c = new PauseCounter(eventNodes);
+			GermanCharInsertClassifier classifier = new GermanCharInsertClassifier();
+			WritingEventFactory factory = new WritingEventFactory(classifier);
+			List<WritingEvent> writingEvents = factory.makeWritingEvents(eventNodes);
+			TypingPauseCounter c = new TypingPauseCounter(writingEvents);
 			c.count();
 			plotPauseFrequencyGraph(c.data008, ".008.png");
 			plotPauseFrequencyGraph(c.data016, ".016.png");

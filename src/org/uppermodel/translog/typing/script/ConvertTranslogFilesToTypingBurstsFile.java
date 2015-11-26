@@ -9,37 +9,113 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.uppermodel.translog.typing.PauseCounter;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.uppermodel.translog.typing.GermanCharInsertClassifier;
+import org.uppermodel.translog.typing.TypingPauseCounter;
+import org.uppermodel.translog.typing.WritingEventFactory;
+import org.uppermodel.translog.typing.dto.CharInsertEvent;
+import org.uppermodel.translog.typing.dto.WritingEvent;
+import org.uppermodel.translog.typing.dto.WritingPause;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import static org.uppermodel.translog.typing.TranslogTypingUtils.*;
 
 /**
- * Converts a set of translog files into a typing burst file
+ * Converts a set of translog files into a typing burst file.
  *
  * @author Daniel Couto-Vale <daniel.couto-vale@ifaar.rwth-aachen.de>
  */
 public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 
-	private static final String KEY = "Key".intern();
-
-	/**
-	 * The path of the xml file
-	 */
-	private final String filePath;
-
 	private PrintWriter out;
+
+	private long pauseA0;
+
+	private long pauseB0;
+
+	private long pauseC0;
+
+	private long pauseA7;
+
+	private long pauseB7;
+
+	private long pauseC7;
+
+	private long pauseA8;
+
+	private long pauseB8;
+
+	private long pauseC8;
+
+	private long pauseA9;
+
+	private long pauseB9;
+
+	private long pauseC9;
+
+	private long pauseAA;
+
+	private long pauseBA;
+
+	private long pauseCA;
+
+	private long pauseAB;
+
+	private long pauseBB;
+
+	private long pauseCB;
+
+	private long pauseAC;
+
+	private long pauseBC;
+
+	private long pauseCC;
+
+	private long pauseAD;
+
+	private long pauseBD;
+
+	private long pauseCD;
+
+	private long pauseAE;
+
+	private long pauseBE;
+
+	private long pauseCE;
+
+	private long pauseAF;
+
+	private long pauseBF;
+
+	private long pauseCF;
+
+	private long pauseXM;
+
+	private List<WritingEvent> writingEvents;
+
+	private String filePath;
 
 	/**
 	 * Constructor
 	 * 
 	 * @param filePath the xml file path
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
 	 */
-	public ConvertTranslogFilesToTypingBurstsFile(String filePath, PrintWriter out) {
+	public ConvertTranslogFilesToTypingBurstsFile(String filePath, PrintWriter out) throws ParserConfigurationException, SAXException, IOException {
 		this.filePath = filePath;
+		Document document = loadDocument(filePath);
+		Element eventsElm = (Element) document.getElementsByTagName("Events").item(0);
+		NodeList eventNodes = eventsElm.getChildNodes();
+		GermanCharInsertClassifier classifier = new GermanCharInsertClassifier();
+		WritingEventFactory factory = new WritingEventFactory(classifier);
+		writingEvents = factory.makeWritingEvents(eventNodes);
+		calcBases();
 		this.out = out;
 	}
 
@@ -50,42 +126,6 @@ public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 		buffer.append(this.filePath + "\n");
 		buffer.append("\n");
 		try {
-			Document document = loadDocument(filePath);
-			Element eventsElm = (Element) document.getElementsByTagName("Events").item(0);
-			NodeList eventNodes = eventsElm.getChildNodes();
-			PauseCounter c = new PauseCounter(eventNodes);
-			c.count();
-			long pauseA0 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 0);
-			long pauseB0 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 0);
-			long pauseC0 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 0);
-			long pauseA7 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 7);
-			long pauseB7 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 7);
-			long pauseC7 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 7);
-			long pauseA8 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 8);
-			long pauseB8 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 8);
-			long pauseC8 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 8);
-			long pauseA9 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 9);
-			long pauseB9 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 9);
-			long pauseC9 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 9);
-			long pauseAA = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 10);
-			long pauseBA = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 10);
-			long pauseCA = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 10);
-			long pauseAB = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 11);
-			long pauseBB = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 11);
-			long pauseCB = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 11);
-			long pauseAC = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 12);
-			long pauseBC = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 12);
-			long pauseCC = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 12);
-			long pauseAD = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 13);
-			long pauseBD = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 13);
-			long pauseCD = (long)c.data064c.getBasePause() * 2L + (long)Math.pow(2, 13);
-			long pauseAE = (long)c.data064a.getBasePause() * 2L + (long)Math.pow(2, 14);
-			long pauseBE = (long)c.data128b.getBasePause() * 2L + (long)Math.pow(2, 14);
-			long pauseCE = (long)c.data064c.getBasePause() * 2L + (long)Math.pow(2, 14);
-			long pauseAF = (long)c.data064a.getBasePause() * 2L + (long)Math.pow(2, 15);
-			long pauseBF = (long)c.data128b.getBasePause() * 2L + (long)Math.pow(2, 15);
-			long pauseCF = (long)c.data064c.getBasePause() * 2L + (long)Math.pow(2, 15);
-			long pauseXM = calculateMean(eventNodes);
 			StringBuffer pause0 = new StringBuffer("");
 			StringBuffer pause7 = new StringBuffer("");
 			StringBuffer pause8 = new StringBuffer("");
@@ -96,87 +136,74 @@ public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 			StringBuffer pauseD = new StringBuffer("");
 			StringBuffer pauseE = new StringBuffer("");
 			StringBuffer pauseF = new StringBuffer("");
-			StringBuffer pauseX = new StringBuffer(""); 
-			for (int i = 0; i < eventNodes.getLength(); i++) {
-				Node node = eventNodes.item(i);
-				if (node.getNodeType() != Node.ELEMENT_NODE) {
+			StringBuffer pauseX = new StringBuffer("");
+			for (WritingEvent writingEvent : writingEvents) {
+				long pause = writingEvent.prevPause.length;
+				WritingPause.Subclass deltaType = writingEvent.prevPause.subclass;
+				char value = ((CharInsertEvent)writingEvent).character;
+				if (deltaType == null) {
+					pause0.append("˘" + value);
+					pause7.append("˘" + value);
+					pause8.append("˘" + value);
+					pause9.append("˘" + value);
+					pauseA.append("˘" + value);
+					pauseB.append("˘" + value);
+					pauseC.append("˘" + value);
+					pauseD.append("˘" + value);
+					pauseE.append("˘" + value);
+					pauseF.append("˘" + value);
+					pauseX.append("˘" + value);
 					continue;
 				}
-				Element elm = (Element) node;
-				if (KEY == elm.getNodeName().intern()) {
-					long pause = Long.parseLong(elm.getAttribute("DeltaTime"));
-					String deltaType = elm.getAttribute("DeltaType");
-					char value;
-					if (elm.getAttribute("Value").equals("")) {
-						value = '`'; // Empirically based guess
-					} else {
-						value = elm.getAttribute("Value").charAt(0);
-					}
-					if (deltaType == null || deltaType.length() == 0) {
-						pause0.append("˘" + value);
-						pause7.append("˘" + value);
-						pause8.append("˘" + value);
-						pause9.append("˘" + value);
-						pauseA.append("˘" + value);
-						pauseB.append("˘" + value);
-						pauseC.append("˘" + value);
-						pauseD.append("˘" + value);
-						pauseE.append("˘" + value);
-						pauseF.append("˘" + value);
-						pauseX.append("˘" + value);
-						continue;
-					}
-					if (pause > pauseXM) { pauseX.append("•" + value); } else { pauseX.append("˘" + value); }
-					switch (deltaType.charAt(0)) {
-					case 'A':
-						if (pause >= pauseA0) { pause0.append("•" + value); } else { pause0.append("˘" + value); }
-						if (pause >= pauseA7) { pause7.append("•" + value); } else { pause7.append("˘" + value); }
-						if (pause >= pauseA8) { pause8.append("•" + value); } else { pause8.append("˘" + value); }
-						if (pause >= pauseA9) { pause9.append("•" + value); } else { pause9.append("˘" + value); }
-						if (pause >= pauseAA) { pauseA.append("•" + value); } else { pauseA.append("˘" + value); }
-						if (pause >= pauseAB) { pauseB.append("•" + value); } else { pauseB.append("˘" + value); }
-						if (pause >= pauseAC) { pauseC.append("•" + value); } else { pauseC.append("˘" + value); }
-						if (pause >= pauseAD) { pauseD.append("•" + value); } else { pauseD.append("˘" + value); }
-						if (pause >= pauseAE) { pauseE.append("•" + value); } else { pauseE.append("˘" + value); }
-						if (pause >= pauseAF) { pauseF.append("•" + value); } else { pauseF.append("˘" + value); }
-						break;
-					case 'B':
-						if (pause >= pauseB0) { pause0.append("•" + value); } else { pause0.append("˘" + value); }
-						if (pause >= pauseB7) { pause7.append("•" + value); } else { pause7.append("˘" + value); }
-						if (pause >= pauseB8) { pause8.append("•" + value); } else { pause8.append("˘" + value); }
-						if (pause >= pauseB9) { pause9.append("•" + value); } else { pause9.append("˘" + value); }
-						if (pause >= pauseBA) { pauseA.append("•" + value); } else { pauseA.append("˘" + value); }
-						if (pause >= pauseBB) { pauseB.append("•" + value); } else { pauseB.append("˘" + value); }
-						if (pause >= pauseBC) { pauseC.append("•" + value); } else { pauseC.append("˘" + value); }
-						if (pause >= pauseBD) { pauseD.append("•" + value); } else { pauseD.append("˘" + value); }
-						if (pause >= pauseBE) { pauseE.append("•" + value); } else { pauseE.append("˘" + value); }
-						if (pause >= pauseBF) { pauseF.append("•" + value); } else { pauseF.append("˘" + value); }
-						break;
-					case 'C':
-						if (pause >= pauseC0) { pause0.append("•" + value); } else { pause0.append("˘" + value); }
-						if (pause >= pauseC7) { pause7.append("•" + value); } else { pause7.append("˘" + value); }
-						if (pause >= pauseC8) { pause8.append("•" + value); } else { pause8.append("˘" + value); }
-						if (pause >= pauseC9) { pause9.append("•" + value); } else { pause9.append("˘" + value); }
-						if (pause >= pauseCA) { pauseA.append("•" + value); } else { pauseA.append("˘" + value); }
-						if (pause >= pauseCB) { pauseB.append("•" + value); } else { pauseB.append("˘" + value); }
-						if (pause >= pauseCC) { pauseC.append("•" + value); } else { pauseC.append("˘" + value); }
-						if (pause >= pauseCD) { pauseD.append("•" + value); } else { pauseD.append("˘" + value); }
-						if (pause >= pauseCE) { pauseE.append("•" + value); } else { pauseE.append("˘" + value); }
-						if (pause >= pauseCF) { pauseF.append("•" + value); } else { pauseF.append("˘" + value); }
-						break;
-					default:
-						pause0.append("˘" + value);
-						pause7.append("˘" + value);
-						pause8.append("˘" + value);
-						pause9.append("˘" + value);
-						pauseA.append("˘" + value);
-						pauseB.append("˘" + value);
-						pauseC.append("˘" + value);
-						pauseD.append("˘" + value);
-						pauseE.append("˘" + value);
-						pauseF.append("˘" + value);
-					}
-						
+				if (pause > pauseXM) { pauseX.append("•" + value); } else { pauseX.append("˘" + value); }
+				switch (deltaType) {
+				case AA:
+					if (pause >= pauseA0) { pause0.append("•" + value); } else { pause0.append("˘" + value); }
+					if (pause >= pauseA7) { pause7.append("•" + value); } else { pause7.append("˘" + value); }
+					if (pause >= pauseA8) { pause8.append("•" + value); } else { pause8.append("˘" + value); }
+					if (pause >= pauseA9) { pause9.append("•" + value); } else { pause9.append("˘" + value); }
+					if (pause >= pauseAA) { pauseA.append("•" + value); } else { pauseA.append("˘" + value); }
+					if (pause >= pauseAB) { pauseB.append("•" + value); } else { pauseB.append("˘" + value); }
+					if (pause >= pauseAC) { pauseC.append("•" + value); } else { pauseC.append("˘" + value); }
+					if (pause >= pauseAD) { pauseD.append("•" + value); } else { pauseD.append("˘" + value); }
+					if (pause >= pauseAE) { pauseE.append("•" + value); } else { pauseE.append("˘" + value); }
+					if (pause >= pauseAF) { pauseF.append("•" + value); } else { pauseF.append("˘" + value); }
+					break;
+				case AB:
+					if (pause >= pauseB0) { pause0.append("•" + value); } else { pause0.append("˘" + value); }
+					if (pause >= pauseB7) { pause7.append("•" + value); } else { pause7.append("˘" + value); }
+					if (pause >= pauseB8) { pause8.append("•" + value); } else { pause8.append("˘" + value); }
+					if (pause >= pauseB9) { pause9.append("•" + value); } else { pause9.append("˘" + value); }
+					if (pause >= pauseBA) { pauseA.append("•" + value); } else { pauseA.append("˘" + value); }
+					if (pause >= pauseBB) { pauseB.append("•" + value); } else { pauseB.append("˘" + value); }
+					if (pause >= pauseBC) { pauseC.append("•" + value); } else { pauseC.append("˘" + value); }
+					if (pause >= pauseBD) { pauseD.append("•" + value); } else { pauseD.append("˘" + value); }
+					if (pause >= pauseBE) { pauseE.append("•" + value); } else { pauseE.append("˘" + value); }
+					if (pause >= pauseBF) { pauseF.append("•" + value); } else { pauseF.append("˘" + value); }
+					break;
+				case BA:
+					if (pause >= pauseC0) { pause0.append("•" + value); } else { pause0.append("˘" + value); }
+					if (pause >= pauseC7) { pause7.append("•" + value); } else { pause7.append("˘" + value); }
+					if (pause >= pauseC8) { pause8.append("•" + value); } else { pause8.append("˘" + value); }
+					if (pause >= pauseC9) { pause9.append("•" + value); } else { pause9.append("˘" + value); }
+					if (pause >= pauseCA) { pauseA.append("•" + value); } else { pauseA.append("˘" + value); }
+					if (pause >= pauseCB) { pauseB.append("•" + value); } else { pauseB.append("˘" + value); }
+					if (pause >= pauseCC) { pauseC.append("•" + value); } else { pauseC.append("˘" + value); }
+					if (pause >= pauseCD) { pauseD.append("•" + value); } else { pauseD.append("˘" + value); }
+					if (pause >= pauseCE) { pauseE.append("•" + value); } else { pauseE.append("˘" + value); }
+					if (pause >= pauseCF) { pauseF.append("•" + value); } else { pauseF.append("˘" + value); }
+					break;
+				default:
+					pause0.append("˘" + value);
+					pause7.append("˘" + value);
+					pause8.append("˘" + value);
+					pause9.append("˘" + value);
+					pauseA.append("˘" + value);
+					pauseB.append("˘" + value);
+					pauseC.append("˘" + value);
+					pauseD.append("˘" + value);
+					pauseE.append("˘" + value);
+					pauseF.append("˘" + value);
 				}
 			}
 			String pause0s = pause0.toString().replaceAll("\\[", "\u232B").replaceAll("\\]", "\u2326");
@@ -239,32 +266,61 @@ public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 		printBuffer(buffer);
 	}
 
+	private void calcBases() {
+		TypingPauseCounter c = new TypingPauseCounter(writingEvents);
+		c.count();
+		pauseA0 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 0);
+		pauseB0 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 0);
+		pauseC0 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 0);
+		pauseA7 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 7);
+		pauseB7 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 7);
+		pauseC7 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 7);
+		pauseA8 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 8);
+		pauseB8 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 8);
+		pauseC8 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 8);
+		pauseA9 = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 9);
+		pauseB9 = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 9);
+		pauseC9 = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 9);
+		pauseAA = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 10);
+		pauseBA = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 10);
+		pauseCA = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 10);
+		pauseAB = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 11);
+		pauseBB = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 11);
+		pauseCB = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 11);
+		pauseAC = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 12);
+		pauseBC = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 12);
+		pauseCC = c.data064c.getBasePause() * 2 + (long)Math.pow(2, 12);
+		pauseAD = c.data064a.getBasePause() * 2 + (long)Math.pow(2, 13);
+		pauseBD = c.data128b.getBasePause() * 2 + (long)Math.pow(2, 13);
+		pauseCD = (long)c.data064c.getBasePause() * 2L + (long)Math.pow(2, 13);
+		pauseAE = (long)c.data064a.getBasePause() * 2L + (long)Math.pow(2, 14);
+		pauseBE = (long)c.data128b.getBasePause() * 2L + (long)Math.pow(2, 14);
+		pauseCE = (long)c.data064c.getBasePause() * 2L + (long)Math.pow(2, 14);
+		pauseAF = (long)c.data064a.getBasePause() * 2L + (long)Math.pow(2, 15);
+		pauseBF = (long)c.data128b.getBasePause() * 2L + (long)Math.pow(2, 15);
+		pauseCF = (long)c.data064c.getBasePause() * 2L + (long)Math.pow(2, 15);
+		pauseXM = calculateMean(writingEvents);
+	}
+
 	private final synchronized void printBuffer(StringBuffer buffer) {
 		out.println(buffer.toString());
 	}
 
-	private final long calculateMean(NodeList eventNodes) {
+	private final long calculateMean(List<WritingEvent> events) {
 		List<Long> means = new ArrayList<Long>();
 		int index = 0;
 		int count = 0;
 		means.add(0L);
-		for (int i = 0; i < eventNodes.getLength(); i++) {
-			Node node = eventNodes.item(i);
-			if (node.getNodeType() != Node.ELEMENT_NODE) {
-				continue;
+		for (WritingEvent event : events) {
+			long pauseLength = event.prevPause.length;
+			if (pauseLength > 0) {
+				means.set(index, means.get(index) + pauseLength);
+				count++;
 			}
-			Element elm = (Element) node;
-			if (KEY == elm.getNodeName().intern()) {
-				long pause = Long.parseLong(elm.getAttribute("DeltaTime"));
-				if (pause > 0) {
-					means.set(index, means.get(index) + pause);
-					count++;
-				}
-				if (count == 100) {
-					means.set(index, means.get(index) / count);
-					index++;
-					means.add(0L);
-				}
+			if (count == 100) {
+				means.set(index, means.get(index) / count);
+				index++;
+				means.add(0L);
 			}
 		}
 		means.set(index, means.get(index)/count);
@@ -293,7 +349,12 @@ public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 		List<Thread> threads = new LinkedList<Thread>();
 		for (; i < paths.length; i++) {
 			String path = paths[i];
-			Runnable runnable = new ConvertTranslogFilesToTypingBurstsFile(path, out);
+			Runnable runnable = new Runnable() {@Override public void run() {}};
+			try {
+				runnable = new ConvertTranslogFilesToTypingBurstsFile(path, out);
+			} catch (ParserConfigurationException | SAXException e) {
+				e.printStackTrace();
+			}
 			Thread thread = new Thread(runnable);
 			thread.run();
 			threads.add(thread);
