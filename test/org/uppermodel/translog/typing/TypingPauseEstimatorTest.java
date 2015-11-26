@@ -22,11 +22,11 @@ public class TypingPauseEstimatorTest {
 		Document document = loadDocument("/Users/DanielVale/Sciebo/Eye-tracking/Baseline Experiment/Analysis/Translogs/1_Participants/Data/1_A01.xml");
 		Element eventsElm = (Element) document.getElementsByTagName("Events").item(0);
 		NodeList eventNodes = eventsElm.getChildNodes();
-
-		// How to use the code form a database
 		CharInsertClassifier classifier = new GermanCharInsertClassifier();
 		WritingEventFactory factory = new WritingEventFactory(classifier);
 		List<WritingEvent> writingEvents = factory.makeWritingEvents(eventNodes);
+
+		// How to use the estimator
 		TypingPauseEstimator estimator = new TypingPauseEstimator();
 		estimator.estimate(writingEvents);
 		
