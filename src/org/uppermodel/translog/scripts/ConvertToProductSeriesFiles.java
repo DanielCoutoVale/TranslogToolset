@@ -9,7 +9,7 @@ import org.uppermodel.translog.TranslogDocumentLoader;
 import org.uppermodel.translog.TranslogDocumentLoadingException;
 import org.uppermodel.translog.export.TextSeriesExporter;
 
-public class ConvertTranslogFilesToProductSeriesFiles {
+public class ConvertToProductSeriesFiles {
 
 	public final static void main(String[] args) throws TranslogDocumentLoadingException, IOException {
 		if (args.length != 2) {
