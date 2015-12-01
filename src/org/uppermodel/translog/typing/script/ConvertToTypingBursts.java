@@ -29,7 +29,7 @@ import static org.uppermodel.translog.typing.TranslogTypingUtils.*;
  *
  * @author Daniel Couto-Vale <daniel.couto-vale@ifaar.rwth-aachen.de>
  */
-public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
+public class ConvertToTypingBursts implements Runnable {
 
 	private PrintWriter out;
 
@@ -107,7 +107,7 @@ public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 */
-	public ConvertTranslogFilesToTypingBurstsFile(String filePath, PrintWriter out) throws ParserConfigurationException, SAXException, IOException {
+	public ConvertToTypingBursts(String filePath, PrintWriter out) throws ParserConfigurationException, SAXException, IOException {
 		this.filePath = filePath;
 		Document document = loadDocument(filePath);
 		Element eventsElm = (Element) document.getElementsByTagName("Events").item(0);
@@ -351,7 +351,7 @@ public class ConvertTranslogFilesToTypingBurstsFile implements Runnable {
 			String path = paths[i];
 			Runnable runnable = new Runnable() {@Override public void run() {}};
 			try {
-				runnable = new ConvertTranslogFilesToTypingBurstsFile(path, out);
+				runnable = new ConvertToTypingBursts(path, out);
 			} catch (ParserConfigurationException | SAXException e) {
 				e.printStackTrace();
 			}

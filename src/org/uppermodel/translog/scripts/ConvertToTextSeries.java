@@ -9,7 +9,7 @@ import org.uppermodel.translog.TranslogDocumentLoader;
 import org.uppermodel.translog.TranslogDocumentLoadingException;
 import org.uppermodel.translog.export.TextSeriesExporter;
 
-public class ConvertToTextSeriesFiles {
+public class ConvertToTextSeries {
 
 	private static final String USAGE = "USAGE: 'convert directory' or 'convert file'";
 
