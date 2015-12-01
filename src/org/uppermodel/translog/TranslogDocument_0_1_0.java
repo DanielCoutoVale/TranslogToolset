@@ -150,4 +150,9 @@ public class TranslogDocument_0_1_0 implements TranslogDocument {
 		return node == null ? "" : node.getNodeValue();
 	}
 
+	@Override
+	public boolean isCompliant() {
+		return document.getDocumentElement().getNodeName().equals("LogFile");
+	}
+
 }

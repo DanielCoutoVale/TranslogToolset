@@ -16,4 +16,6 @@ public interface TranslogDocument {
 
 	public List<TranslogEvent> getEvents();
 
+	public boolean isCompliant();
+
 }
