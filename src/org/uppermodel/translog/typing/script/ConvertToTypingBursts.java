@@ -1,6 +1,5 @@
 package org.uppermodel.translog.typing.script;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,6 +10,9 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.uppermodel.translog.TranslogDocument;
+import org.uppermodel.translog.TranslogDocumentLoader;
+import org.uppermodel.translog.TranslogDocumentLoadingException;
 import org.uppermodel.translog.typing.GermanCharInsertClassifier;
 import org.uppermodel.translog.typing.TypingPauseCounter;
 import org.uppermodel.translog.typing.WritingEventFactory;
@@ -30,6 +32,8 @@ import static org.uppermodel.translog.typing.TranslogTypingUtils.*;
  * @author Daniel Couto-Vale <daniel.couto-vale@ifaar.rwth-aachen.de>
  */
 public class ConvertToTypingBursts implements Runnable {
+
+	private static final String USAGE = "USAGE: 'java -jar convert-to-typing-bursts.jar directory' or 'java -jar convert-to-typing-bursts.jar file'";
 
 	private PrintWriter out;
 
@@ -264,6 +268,8 @@ public class ConvertToTypingBursts implements Runnable {
 			e.printStackTrace();
 		}
 		printBuffer(buffer);
+		out.flush();
+		out.close();
 	}
 
 	private void calcBases() {
@@ -339,25 +345,22 @@ public class ConvertToTypingBursts implements Runnable {
 	 * @param paths the process path
 	 * @throws IOException 
 	 */
-	public static void main(String[] paths) throws IOException {
-		PrintWriter out = new PrintWriter(System.out);
-		int i = 0;
-		if (paths[0].intern() == "-f".intern()) {
-			out = new PrintWriter(new BufferedWriter(new FileWriter(new File(paths[1]))));
-			i = 2;
-		}
+	public static final void main(String[] args) throws IOException {
 		List<Thread> threads = new LinkedList<Thread>();
-		for (; i < paths.length; i++) {
-			String path = paths[i];
-			Runnable runnable = new Runnable() {@Override public void run() {}};
-			try {
-				runnable = new ConvertToTypingBursts(path, out);
-			} catch (ParserConfigurationException | SAXException e) {
-				e.printStackTrace();
+		if (args.length == 0) {
+			System.out.println(USAGE);
+			return;
+		}
+		File argFile = new File(args[0]);
+		if (argFile.isDirectory()) {
+			for (File inputFile : argFile.listFiles()) {
+				convert(threads, inputFile);
 			}
-			Thread thread = new Thread(runnable);
-			thread.run();
-			threads.add(thread);
+		} else if (argFile.isFile()) {
+			convert(threads, argFile);
+		} else {
+			System.out.println(USAGE);
+			return;
 		}
 		for (Thread thread : threads) {
 			while (thread.isAlive()) {
@@ -368,7 +371,40 @@ public class ConvertToTypingBursts implements Runnable {
 				}
 			}
 		}
-		out.flush();
-		out.close();
+	}
+
+	private static final boolean convert(List<Thread> threads, File sourceFile) {
+		try {
+			return convertUnsafe(threads, sourceFile);
+		} catch (IOException | TranslogDocumentLoadingException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private static final boolean convertUnsafe(List<Thread> threads, File sourceFile) throws IOException, TranslogDocumentLoadingException {
+		final String sourceFileName = sourceFile.getName();
+		if (!sourceFileName.endsWith(".xml")) {
+			return false;
+		}
+		String targetFileName = sourceFileName.substring(0, sourceFileName.length() - 4) + ".tb"; 
+		File targetFile = new File(sourceFile.getParentFile(), targetFileName);
+		TranslogDocumentLoader loader = new TranslogDocumentLoader();
+		TranslogDocument document = loader.loadDocument(sourceFile);
+		if (!document.isCompliant()) {
+			return false;
+		}
+		FileWriter fw = new FileWriter(targetFile);
+		PrintWriter pw = new PrintWriter(fw);
+		Runnable runnable = new Runnable() {@Override public void run() {}};
+		try {
+			runnable = new ConvertToTypingBursts(sourceFile.getPath(), pw);
+		} catch (ParserConfigurationException | SAXException e) {
+			e.printStackTrace();
+		}
+		Thread thread = new Thread(runnable);
+		thread.run();
+		threads.add(thread);
+		return true;
 	}
 }

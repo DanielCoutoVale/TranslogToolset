@@ -11,7 +11,7 @@ import org.uppermodel.translog.export.TextSeriesExporter;
 
 public class ConvertToTextSeries {
 
-	private static final String USAGE = "USAGE: 'convert directory' or 'convert file'";
+	private static final String USAGE = "USAGE: 'java -jar convert-to-text-series.jar directory' or 'java -jar convert-to-text-series.jar file'";
 
 	public final static void main(String[] args) {
 		if (args.length == 0) {
